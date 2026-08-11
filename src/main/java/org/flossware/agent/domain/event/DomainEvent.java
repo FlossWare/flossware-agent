@@ -9,7 +9,13 @@ import org.flossware.agent.domain.id.Identifiers.AgentId;
 import org.flossware.agent.domain.id.Identifiers.EventId;
 import org.flossware.agent.domain.id.Identifiers.SessionId;
 
-/** Immutable fact describing a meaningful domain occurrence. */
+/**
+ * Immutable fact describing a meaningful domain occurrence.
+ *
+ * <p>Payload is intentionally {@code Map<String, String>} for this contract generation:
+ * it avoids coupling to JSON trees or serialization frameworks. Producers that need
+ * structured data encode it as strings. See ADR 0003.
+ */
 public final class DomainEvent {
     private final EventId id;
     private final EventType type;
@@ -42,6 +48,8 @@ public final class DomainEvent {
     public Optional<AgentId> agentId() { return Optional.ofNullable(agentId); }
     public Optional<SessionId> sessionId() { return Optional.ofNullable(sessionId); }
     public Instant occurredAt() { return occurredAt; }
+
+    /** Unmodifiable string map; structured data must be encoded by the producer. */
     public Map<String, String> payload() { return payload; }
 
     @Override

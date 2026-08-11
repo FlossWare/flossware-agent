@@ -18,7 +18,7 @@ Message, Context, Memory, Task, Tool, Model, Provider, Event, and Artifact.
 | Message | Immutable (equality by id) |
 | Context | Immutable value object (no identity) |
 | ToolDefinition, ToolInvocation, ModelDescriptor, ModelRequest/Response | Immutable values |
-| DomainEvent | Immutable domain event |
+| DomainEvent | Immutable domain event; payload is `Map<String, String>` (see ADR 0003) |
 | Repository / ModelProvider / ToolExecutor / EventPublisher | Ports (interfaces) |
 | SessionState, InteractionState, TaskState, AgentStatus, MessageRole, MemoryKind, EventType | Enums |
 
