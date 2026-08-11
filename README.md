@@ -55,7 +55,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/adr/](docs/adr/).
 
 ## Build
 
-Requires JDK 17+.
+Requires JDK 21+.
 
 ```bash
 mvn test
