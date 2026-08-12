@@ -53,12 +53,29 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [docs/adr/](docs/adr/).
 6. Immutability: transitions return new instances with the same identity.
 7. Testable contracts.
 
+## Versioning
+
+FlossWare projects use **X.Y** versions only (no `X.Y.Z`, no `-SNAPSHOT`), as enforced by
+[`build-tools`](https://github.com/FlossWare/build-tools).
+
+This library is **1.0**. Published coordinates:
+
+```xml
+<dependency>
+  <groupId>org.flossware</groupId>
+  <artifactId>flossware-agent</artifactId>
+  <version>1.0</version>
+</dependency>
+```
+
+Resolve from PackageCloud: `https://packagecloud.io/flossware/java/maven2/`
+
 ## Build
 
 Requires JDK 21+.
 
 ```bash
-mvn test
+mvn clean verify
 ```
 
 ## Package layout
@@ -71,4 +88,5 @@ org.flossware.agent
 
 ## Status
 
-Domain model and public contracts for issue #1 are implemented.
+Domain model and public contracts for issue #1 are implemented. Version **1.0** is the
+first release aligned with FlossWare build-tools conventions.
