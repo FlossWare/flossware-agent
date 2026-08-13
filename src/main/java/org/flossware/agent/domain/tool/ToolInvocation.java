@@ -38,6 +38,10 @@ public final class ToolInvocation {
     /**
      * Reconstructs a previously persisted invocation with a fixed identity and timestamps.
      * Structural validation matches construction rules; does not enforce lifecycle transitions.
+     *
+     * <p>Completion coupling ({@code completedAt} vs {@code result}/{@code success}) is not forced
+     * here: a completed invocation may have a null result payload (empty successful output is valid).
+     * Adapters should persist {@code completedAt} only when the invocation has finished.
      */
     public static ToolInvocation restore(ToolInvocationId id, ToolId toolId, InteractionId interactionId,
                                          String arguments, Instant invokedAt, String result,

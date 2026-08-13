@@ -45,6 +45,8 @@ class ToolInvocationIdentityTest {
         Instant completed = Instant.parse("2024-05-01T12:00:01Z");
         ToolInvocation restored = ToolInvocation.restore(
                 id, TOOL, INTERACTION, "{\"a\":true}", invoked, "result", true, completed);
+
+        // Field assertions — do not rely on equals() alone (identity-based equality).
         assertEquals(id, restored.id());
         assertEquals(TOOL, restored.toolId());
         assertEquals(INTERACTION, restored.interactionId());
@@ -54,11 +56,34 @@ class ToolInvocationIdentityTest {
         assertTrue(restored.success());
         assertEquals(completed, restored.completedAt().orElseThrow());
         assertTrue(restored.isComplete());
+    }
 
-        ToolInvocation sameId = ToolInvocation.restore(
-                id, TOOL, INTERACTION, "other", invoked, null, false, null);
-        assertEquals(restored, sameId);
-        assertEquals(restored.hashCode(), sameId.hashCode());
+    @Test
+    void equalsIsIdentityOnlyNotStructural() {
+        ToolInvocationId id = ToolInvocationId.of("inv-same");
+        Instant invoked = Instant.parse("2024-05-01T12:00:00Z");
+        ToolInvocation a = ToolInvocation.restore(
+                id, TOOL, INTERACTION, "{\"a\":1}", invoked, "r1", true, invoked);
+        ToolInvocation b = ToolInvocation.restore(
+                id, TOOL, INTERACTION, "{\"a\":2}", invoked, "r2", false, null);
+        assertEquals(a, b);
+        assertEquals(a.hashCode(), b.hashCode());
+        assertEquals("{\"a\":1}", a.arguments());
+        assertEquals("{\"a\":2}", b.arguments());
+        assertTrue(a.isComplete());
+        assertFalse(b.isComplete());
+    }
+
+    @Test
+    void restoreAllowsCompletedWithNullResultPayload() {
+        ToolInvocationId id = ToolInvocationId.of("inv-empty");
+        Instant invoked = Instant.parse("2024-05-01T12:00:00Z");
+        Instant completed = Instant.parse("2024-05-01T12:00:01Z");
+        ToolInvocation restored = ToolInvocation.restore(
+                id, TOOL, INTERACTION, "{}", invoked, null, true, completed);
+        assertTrue(restored.isComplete());
+        assertTrue(restored.success());
+        assertTrue(restored.result().isEmpty());
     }
 
     @Test
