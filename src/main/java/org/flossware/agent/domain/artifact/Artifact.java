@@ -1,7 +1,6 @@
 package org.flossware.agent.domain.artifact;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,19 +29,35 @@ public final class Artifact {
         this.sessionId = sessionId;
         this.interactionId = interactionId;
         Objects.requireNonNull(name, "name");
-        if (name.isBlank()) throw new IllegalArgumentException("name must not be blank");
+        if (name.isBlank()) {
+            throw new IllegalArgumentException("name must not be blank");
+        }
         this.name = name;
         this.mediaType = mediaType == null ? "application/octet-stream" : mediaType;
         Objects.requireNonNull(locator, "locator");
-        if (locator.isBlank()) throw new IllegalArgumentException("locator must not be blank");
+        if (locator.isBlank()) {
+            throw new IllegalArgumentException("locator must not be blank");
+        }
         this.locator = locator;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
-        this.metadata = Collections.unmodifiableMap(Objects.requireNonNull(metadata, "metadata"));
+        // Defensive copy; rejects null keys/values. Same path for create and restore.
+        this.metadata = Map.copyOf(Objects.requireNonNull(metadata, "metadata"));
     }
 
     public static Artifact create(AgentId agentId, String name, String mediaType, String locator) {
         return new Artifact(ArtifactId.random(), agentId, null, null, name, mediaType, locator,
                 Instant.now(), Map.of());
+    }
+
+    /**
+     * Reconstructs a previously persisted artifact with a fixed identity and provenance.
+     * Used by persistence adapters for round-tripping; validates the same constraints as {@link #create}.
+     */
+    public static Artifact restore(ArtifactId id, AgentId agentId, SessionId sessionId,
+                                   InteractionId interactionId, String name, String mediaType,
+                                   String locator, Instant createdAt, Map<String, String> metadata) {
+        return new Artifact(id, agentId, sessionId, interactionId, name, mediaType, locator,
+                createdAt, metadata);
     }
 
     public ArtifactId id() { return id; }
@@ -57,9 +72,17 @@ public final class Artifact {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Artifact other)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Artifact other)) {
+            return false;
+        }
         return id.equals(other.id);
     }
-    @Override public int hashCode() { return id.hashCode(); }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }
