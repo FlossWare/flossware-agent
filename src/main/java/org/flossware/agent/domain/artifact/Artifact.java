@@ -1,7 +1,6 @@
 package org.flossware.agent.domain.artifact;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +40,8 @@ public final class Artifact {
         }
         this.locator = locator;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
-        this.metadata = Collections.unmodifiableMap(Objects.requireNonNull(metadata, "metadata"));
+        // Defensive copy; rejects null keys/values. Same path for create and restore.
+        this.metadata = Map.copyOf(Objects.requireNonNull(metadata, "metadata"));
     }
 
     public static Artifact create(AgentId agentId, String name, String mediaType, String locator) {
@@ -57,7 +57,7 @@ public final class Artifact {
                                    InteractionId interactionId, String name, String mediaType,
                                    String locator, Instant createdAt, Map<String, String> metadata) {
         return new Artifact(id, agentId, sessionId, interactionId, name, mediaType, locator,
-                createdAt, Map.copyOf(Objects.requireNonNull(metadata, "metadata")));
+                createdAt, metadata);
     }
 
     public ArtifactId id() { return id; }

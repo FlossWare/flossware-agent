@@ -3,6 +3,7 @@ package org.flossware.agent.domain;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,9 +13,7 @@ import org.flossware.agent.domain.artifact.Artifact;
 import org.flossware.agent.domain.id.Identifiers.AgentId;
 import org.flossware.agent.domain.id.Identifiers.ArtifactId;
 import org.flossware.agent.domain.id.Identifiers.InteractionId;
-import org.flossware.agent.domain.id.Identifiers.MemoryId;
 import org.flossware.agent.domain.id.Identifiers.SessionId;
-import org.flossware.agent.domain.id.Identifiers.TaskId;
 import org.flossware.agent.domain.interaction.Interaction;
 import org.flossware.agent.domain.interaction.InteractionState;
 import org.flossware.agent.domain.memory.Memory;
@@ -124,14 +123,15 @@ class RestoreSemanticsTest {
                 original.id(), original.agentId(), original.sessionId().orElse(null),
                 original.interactionId().orElse(null), original.name(), original.mediaType(),
                 original.locator(), original.createdAt(), original.metadata());
-        assertEquals(original, restored);
         assertEquals(original.id(), restored.id());
+        assertEquals(original.agentId(), restored.agentId());
         assertEquals("report.pdf", restored.name());
         assertEquals("application/pdf", restored.mediaType());
         assertEquals("s3://bucket/key", restored.locator());
         assertEquals(original.createdAt(), restored.createdAt());
         assertTrue(restored.sessionId().isEmpty());
         assertTrue(restored.interactionId().isEmpty());
+        assertEquals(original, restored);
     }
 
     @Test
@@ -173,6 +173,27 @@ class RestoreSemanticsTest {
                 () -> Artifact.restore(id, agentId, null, null, "n", "text/plain", "loc", null, Map.of()));
         assertThrows(NullPointerException.class,
                 () -> Artifact.restore(id, agentId, null, null, "n", "text/plain", "loc", created, null));
+    }
+
+    @Test
+    void artifactMetadataIsDefensiveCopyAndRejectsNullEntries() {
+        AgentId agentId = AgentId.of("a1");
+        Instant created = Instant.parse("2024-01-01T00:00:00Z");
+        Map<String, String> mutable = new HashMap<>();
+        mutable.put("k", "v");
+        Artifact restored = Artifact.restore(
+                ArtifactId.of("art-m"), agentId, null, null,
+                "n", "text/plain", "loc", created, mutable);
+        assertEquals("v", restored.metadata().get("k"));
+        mutable.put("k", "mutated");
+        assertEquals("v", restored.metadata().get("k"));
+        assertThrows(UnsupportedOperationException.class, () -> restored.metadata().put("x", "y"));
+
+        Map<String, String> withNullValue = new HashMap<>();
+        withNullValue.put("k", null);
+        assertThrows(NullPointerException.class,
+                () -> Artifact.restore(ArtifactId.of("art-n"), agentId, null, null,
+                        "n", "text/plain", "loc", created, withNullValue));
     }
 
     @Test
