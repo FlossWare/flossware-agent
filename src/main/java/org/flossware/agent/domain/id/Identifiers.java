@@ -8,7 +8,7 @@ public final class Identifiers {
     private Identifiers() {}
 
     public sealed interface DomainId permits AgentId, SessionId, InteractionId, MessageId,
-            MemoryId, TaskId, ToolId, ModelId, ProviderId, EventId, ArtifactId {
+            MemoryId, TaskId, ToolId, ToolInvocationId, ModelId, ProviderId, EventId, ArtifactId {
         String value();
     }
 
@@ -45,6 +45,11 @@ public final class Identifiers {
     public record ToolId(String value) implements DomainId {
         public ToolId { requireNonBlank(value, "ToolId"); }
         public static ToolId of(String value) { return new ToolId(value); }
+    }
+    public record ToolInvocationId(String value) implements DomainId {
+        public ToolInvocationId { requireNonBlank(value, "ToolInvocationId"); }
+        public static ToolInvocationId random() { return new ToolInvocationId(UUID.randomUUID().toString()); }
+        public static ToolInvocationId of(String value) { return new ToolInvocationId(value); }
     }
     public record ModelId(String value) implements DomainId {
         public ModelId { requireNonBlank(value, "ModelId"); }
